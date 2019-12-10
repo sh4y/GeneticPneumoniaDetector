@@ -15,8 +15,7 @@ def encode_data(normal_data, pneum_data, normal_hot, pneum_hot):
     zipped = list(zip(x,y))
     random.shuffle(zipped)
     x,y = zip(*zipped)
-
-    return x,y
+    return np.asarray(x), np.asarray(list(y))
 
 def load_data(data_type, nor = 0, pneu = 0):
     normal_data, pneum_data = [], []
