@@ -2,10 +2,9 @@ import numpy as np
 import pandas as pd
 import imageio as io
 from skimage.color import rgb2gray
+from keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
 import os, random
-
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 data_location = r'C:\Users\dev368\Documents\Pneumonia\chest-xray-pneumonia\chest_xray'
 
@@ -16,6 +15,50 @@ def encode_data(normal_data, pneum_data, normal_hot, pneum_hot):
     random.shuffle(zipped)
     x,y = zip(*zipped)
     return np.asarray(x), np.asarray(list(y))
+
+    
+def pad(array, reference_shape, offsets):
+    """
+    array: Array to be padded
+    reference_shape: tuple of size of ndarray to create
+    offsets: list of offsets (number of elements must be equal to the dimension of the array)
+    will throw a ValueError if offsets is too big and the reference_shape cannot handle the offsets
+    """
+
+    # Create an array of zeros with the reference shape
+    result = np.zeros(reference_shape)
+    # Create a list of slices from offset to offset + shape in each dimension
+    insertHere = [slice(offsets[dim], offsets[dim] + array.shape[dim]) for dim in range(array.ndim)]
+    # Insert the array in the result at the specified offsets
+    result[insertHere] = array
+    return result
+
+def pad_images(images):
+    max_rows, max_cols = 0, 0
+    for image in images:
+        print(image.shape)
+        max_rows = max(image.shape[0], max_rows)
+        max_cols = max(image.shape[1], max_cols)
+
+    print("Greatest image dimension is ({0},{1})".format(max_rows,max_cols))
+    padded_images = []
+    for image in images:
+        rows = image.shape[0]
+        cols = image.shape[1]
+        
+        rows_to_pad = max_rows - rows
+        cols_to_pad = max_cols - cols
+
+        padded_image = pad(image, (max_rows, max_cols), [rows_to_pad, cols_to_pad])
+
+        padded_images.append(padded_image)
+        '''pad_left = cols_to_pad // 2
+        pad_right = cols_to_pad - pad_left
+
+        pad_top = rows_to_pad // 2
+        pad_bot = rows_to_pad - pad_bot'''
+    print("Padded all images to maximum size.")
+    return padded_images    
 
 def load_data(data_type, nor = 0, pneu = 0):
     normal_data, pneum_data = [], []
@@ -51,7 +94,10 @@ def load_data(data_type, nor = 0, pneu = 0):
         pneum_hot.append([0,1])
     
     encoded_x, encoded_y = encode_data(normal_data, pneum_data, normal_hot, pneum_hot)
+    padded_x = pad_images(encoded_x)    
+    return padded_x, encoded_y
 
-    return encoded_x, encoded_y
+
+        
 
 

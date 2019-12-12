@@ -35,14 +35,11 @@ def initialize_nn_population(n=INITIAL_NUMBER_NEURAL_NETS):
     return classifiers
 
 def train_classifiers(classifiers, xtrain, ytrain):
-    print(xtrain[0])
-    input()
     for x in range(len(classifiers)):
         print("Training classifier number " + str(x))
         classifiers[x].fit(xtrain, ytrain)
-
-
-print('Loading train data.')
+        
+print('Loading + padding train data.')
 xtrain, ytrain = Data.load_data('train', 50, 50)
 print("Loaded xtrain with shape {0} and ytrain with shape {1}".format(xtrain.shape, ytrain.shape))
 classifiers = initialize_nn_population()
