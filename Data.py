@@ -33,13 +33,20 @@ def pad(array, reference_shape, offsets):
     result[insertHere] = array
     return result
 
-def pad_images(images):
+def get_max_image_size(dataset):
     max_rows, max_cols = 0, 0
-    for image in images:
-        print(image.shape)
+    for image in dataset:
         max_rows = max(image.shape[0], max_rows)
         max_cols = max(image.shape[1], max_cols)
+    return (max_rows, max_cols)
 
+def pad_images(images, given_shape=(0,0)):
+    max_rows, max_cols = 0, 0
+    if (given_shape == (0,0)):
+        max_rows, max_cols = get_max_image_size(images)
+    else:
+        max_rows = given_shape[0]
+        max_cols = given_shape[1]
     print("Greatest image dimension is ({0},{1})".format(max_rows,max_cols))
     padded_images = []
     for image in images:
@@ -58,9 +65,14 @@ def pad_images(images):
         pad_top = rows_to_pad // 2
         pad_bot = rows_to_pad - pad_bot'''
     print("Padded all images to maximum size.")
-    return padded_images    
+    return np.asarray(padded_images)
 
-def load_data(data_type, nor = 0, pneu = 0):
+def reshape_training_data(train_dataset):
+    nsamples, nx, ny = train_dataset.shape
+    d2_train_dataset = train_dataset.reshape((nsamples,nx*ny))
+    return d2_train_dataset
+
+def load_data(data_type, nor = 0, pneu = 0, pad_shape=(0,0)):
     normal_data, pneum_data = [], []
     normal_hot, pneum_hot = [], []
     type_location = data_location + '\\' + data_type
@@ -94,9 +106,9 @@ def load_data(data_type, nor = 0, pneu = 0):
         pneum_hot.append([0,1])
     
     encoded_x, encoded_y = encode_data(normal_data, pneum_data, normal_hot, pneum_hot)
-    padded_x = pad_images(encoded_x)    
-    return padded_x, encoded_y
-
+    padded_x = pad_images(encoded_x)
+    reshaped_x = reshape_training_data(padded_x)    
+    return reshaped_x, encoded_y
 
         
 

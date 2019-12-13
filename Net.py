@@ -6,10 +6,10 @@ import Data
 
 SOLVERS = ['lbfgs', 'sgd', 'adam']
 ACTIVATION = ['identity', 'logistic', 'tanh', 'relu']
-MAX_HIDDEN_LAYERS = 10
-MAX_NEURONS_PER_LAYER = 15
+MAX_HIDDEN_LAYERS = 3
+MAX_NEURONS_PER_LAYER = 7
 
-INITIAL_NUMBER_NEURAL_NETS = 5
+INITIAL_NUMBER_NEURAL_NETS = 1
 
 def create_hidden_layer_properties():
     layers = list(np.ones(random.randint(1, MAX_HIDDEN_LAYERS)))
@@ -38,9 +38,21 @@ def train_classifiers(classifiers, xtrain, ytrain):
     for x in range(len(classifiers)):
         print("Training classifier number " + str(x))
         classifiers[x].fit(xtrain, ytrain)
-        
+
+def test_classifiers(classifiers, xtest, ytest):
+    for x in range(len(classifiers)):
+        print("Testing classifier number " + str(x))
+        prediction = classifiers[x].predict(xtest)
+        test_accuracy = np.sum(prediction == ytest.flatten()) / float(prediction.shape[0])
+        print(test_accuracy)
+
 print('Loading + padding train data.')
 xtrain, ytrain = Data.load_data('train', 50, 50)
-print("Loaded xtrain with shape {0} and ytrain with shape {1}".format(xtrain.shape, ytrain.shape))
+print("Loaded xtrain, ytrain with {0} points of data".format(xtrain.shape))
+
 classifiers = initialize_nn_population()
 train_classifiers(classifiers, xtrain, ytrain)
+
+print('Loading + padding test data.')
+xtest,ytest = Data.load_data('test', 50, 50)
+test_classifiers(classifiers, xtest, ytest)
