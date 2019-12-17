@@ -67,12 +67,18 @@ def pad_images(images, given_shape=(0,0)):
     print("Padded all images to maximum size.")
     return np.asarray(padded_images)
 
-def reshape_training_data(train_dataset):
-    nsamples, nx, ny = train_dataset.shape
-    d2_train_dataset = train_dataset.reshape((nsamples,nx*ny))
-    return d2_train_dataset
+def reshape_data(dataset):
+    nsamples, nx, ny = dataset.shape
+    d2_dataset = dataset.reshape((nsamples,nx*ny))
+    return d2_dataset
 
-def load_data(data_type, nor = 0, pneu = 0, pad_shape=(0,0)):
+def find_max_shape_in_datasets(datasets):
+    max_rows, max_cols = 0, 0
+    for dataset in datasets:
+        max_rows, max_cols = get_max_image_size(dataset)
+    return (max_rows, max_cols)
+
+def load_raw_data(data_type, nor=0, pneu=0):
     normal_data, pneum_data = [], []
     normal_hot, pneum_hot = [], []
     type_location = data_location + '\\' + data_type
@@ -106,9 +112,25 @@ def load_data(data_type, nor = 0, pneu = 0, pad_shape=(0,0)):
         pneum_hot.append([0,1])
     
     encoded_x, encoded_y = encode_data(normal_data, pneum_data, normal_hot, pneum_hot)
-    padded_x = pad_images(encoded_x)
-    reshaped_x = reshape_training_data(padded_x)    
-    return reshaped_x, encoded_y
+    return encoded_x, encoded_y
+
+def load_data(nor = 0, pneu = 0):    
+    print('Loading train data.')
+    encoded_xtrain, encoded_ytrain = load_raw_data('train', nor, pneu)
+    print('Loading test data.')
+    encoded_xtest, encoded_ytest = load_raw_data('test', nor, pneu)
+
+    max_shape = find_max_shape_in_datasets([encoded_xtrain, encoded_xtest])
+
+    print('Padding images')
+    padded_xtrain = pad_images(encoded_xtrain, max_shape)
+    padded_xtest = pad_images(encoded_xtest, max_shape)
+
+    print('Reshaping x data')
+    reshaped_xtrain = reshape_data(padded_xtrain)
+    reshaped_xtest = reshape_data(padded_xtest)  
+
+    return reshaped_xtrain, encoded_ytrain, reshaped_xtest, encoded_ytest
 
         
 
